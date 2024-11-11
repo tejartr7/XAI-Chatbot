@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+
+
+
+# Chatbot using XAI API
+
+This project is a chatbot built using the XAI API, Next.js, and Tailwind CSS. The chatbot leverages the powerful AI capabilities of XAI to provide intelligent conversations. The project is fully deployed on [Vercel](https://vercel.com/), and you can try it live!
+
+## Features
+- Built with **Next.js** for server-side rendering and routing.
+- Styled with **Tailwind CSS** for responsive and modern design.
+- Integrated with **XAI API** for natural language processing and chatbot functionality.
 
 ## Getting Started
 
-First, run the development server:
+To set up the project locally, follow these steps:
 
+### Prerequisites
+- **Node.js** (Recommended version: 16+)
+- **npm** (Node Package Manager)
+
+### 1. Clone the repository
+Clone this repository to your local machine using the following command:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/tejartr7/XAI-Chatbot
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
+Navigate into the project folder and run the following command to install the necessary dependencies:
+```bash
+cd your-repo-name
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Set up XAI API key
+To interact with the XAI API, you'll need to get an API key. Here's how you can do that:
+- Go to the [XAI Console](https://console.x.ai/).
+- Create an account or log in to generate your API key.
+- Copy your **NEXT_PUBLIC_XAI** API key.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Add the API key to the `.env.local` file
+Create a `.env.local` file in the root of the project if it doesn't already exist, and add your XAI API key like this:
+```env
+NEXT_PUBLIC_XAI=<your-xai-api-key>
+```
 
-## Learn More
+### 5. Run the development server
+Start the development server by running the following command:
+```bash
+npm run dev
+```
+Visit `http://localhost:3000` in your browser to see the chatbot in action.
 
-To learn more about Next.js, take a look at the following resources:
+## Deployed Project
+The project is deployed and can be accessed via [Vercel](https://vercel.com/). Here's the link to the live version:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+[Live Chatbot](https://your-deployment-url.vercel.app)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Documentation
+To learn more about how the XAI API works and its available endpoints, you can check out the official documentation:
 
-## Deploy on Vercel
+- [XAI API Documentation](https://docs.x.ai/docs)
+- [XAI API Endpoints](https://docs.x.ai/api/endpoints)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
+Feel free to open an issue if you find any bugs or have any suggestions for improvements! Pull requests are always welcome.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Give it a Star! ⭐
+If you like the project, please give it a star on GitHub!
+
+## License
+This project is open-source and available under the [MIT License](LICENSE).
+

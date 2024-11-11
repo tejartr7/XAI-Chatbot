@@ -1,101 +1,201 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useTransition } from "react";
+import { Moon, Sun } from "lucide-react";
+import axios from "axios";
 
-export default function Home() {
+// Define TypeScript types for messages and responses
+interface Message {
+  text?: string;
+  image?: string | null;
+  sender: "user" | "bot";
+}
+
+interface ChatResponse {
+  text?: string;
+  image?: string | null;
+  error?: string;
+}
+
+// Server Action function: typed to ensure return types are safe
+async function handleChatbotResponse(message: string): Promise<ChatResponse> {
+  const apiKey = process.env.NEXT_PUBLIC_XAPI; // Replace with your xAI API key
+
+  try {
+    const response = await axios.post(
+      "https://api.x.ai/v1/chat/completions",
+      {
+        model: "grok-beta",
+        messages: [{ role: "user", content: message }],
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
+    );
+
+    const { data } = response;
+    const botText = data.choices[0]?.message?.content;
+    const isImageRequest =
+      message.toLowerCase().includes("image") ||
+      message.toLowerCase().includes("picture");
+    let botImage: string | null = null;
+
+    if (isImageRequest) {
+      const imageResponse = await axios.post(
+        "https://api.x.ai/v1/chat/completions",
+        {
+          model: "grok-beta",
+          messages: [{ role: "user", content: message }],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+        }
+      );
+      botImage = imageResponse.data.choices[0]?.message?.content || null;
+    }
+
+    return { text: botText, image: botImage };
+  } catch (error) {
+    console.error("Error in chatbot API:", error);
+    return { error: "An error occurred" };
+  }
+}
+
+export default function ChatPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState<string>("");
+  const [isPending, startTransition] = useTransition();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prevMode) => !prevMode);
+  };
+
+  const sendMessage = async () => {
+    if (input.trim()) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: input, sender: "user" },
+      ]);
+      setInput("");
+
+      startTransition(async () => {
+        try {
+          const response = await handleChatbotResponse(input);
+          if (response.text) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { text: response.text, sender: "bot" },
+            ]);
+          }
+          if (response.image) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { image: response.image, sender: "bot" },
+            ]);
+          }
+        } catch (error) {
+          console.error("Error in sendMessage:", error);
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { text: "An error occurred. Please try again.", sender: "bot" },
+          ]);
+        }
+      });
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
+    <div
+      className={`flex flex-col h-screen transition-colors duration-300 ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"
+      }`}
+    >
+      <header className="flex justify-between items-center p-4 shadow-md">
+        <div className="text-lg font-medium">
+          <a href="https://twitter.com/raghu_rtr" className="hover:underline">
+            Created by https://twitter.com/raghu_rtr
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
           target="_blank"
-          rel="noopener noreferrer"
+          href="https://docs.x.ai/"
+          className="hover:underline"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
+          Using xAI API
         </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={toggleDarkMode}
+          className={`px-4 py-2 rounded-md transition-colors ${
+            isDarkMode
+              ? "bg-gray-700 text-white hover:bg-gray-600"
+              : "bg-gray-200 hover:bg-gray-300"
+          }`}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
+        </button>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-3xl mx-auto">
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`mb-4 ${
+                msg.sender === "user" ? "text-right" : "text-left"
+              }`}
+            >
+              {msg.text && (
+                <div
+                  className={`inline-block px-4 py-2 rounded-md shadow-md ${
+                    msg.sender === "user"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+              )}
+              {msg.image && (
+                <img src={msg.image} alt="Generated" className="max-w-full" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-4 shadow-t">
+        <div className="max-w-3xl mx-auto flex items-center">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+            placeholder="Type your message..."
+            className={`flex-grow px-4 py-2 rounded-md border transition-colors ${
+              isDarkMode
+                ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
+                : "bg-white border-gray-300 focus:border-blue-500"
+            }`}
+            disabled={isPending}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button
+            onClick={sendMessage}
+            className={`ml-4 px-6 py-2 rounded-md transition-colors ${
+              isDarkMode
+                ? "bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+                : "bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+            }`}
+            disabled={isPending}
+          >
+            {isPending ? "Loading..." : "Send"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
